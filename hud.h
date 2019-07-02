@@ -57,7 +57,9 @@ int update_hud()
     static char text[20]; 
     SDL_Color text_color = {25,0,255};
     sprintf(text, "level : %d", level_id);
+    SDL_FreeSurface(lvl_ind_sur);
     lvl_ind_sur = TTF_RenderText_Solid(lvl_ind_font, text, text_color);
+    SDL_DestroyTexture(lvl_ind_tex);
     lvl_ind_tex = SDL_CreateTextureFromSurface(renderer, lvl_ind_sur);
     SDL_QueryTexture(lvl_ind_tex, NULL, NULL, &w, &h);
     lvl_ind_rec.w = w;
@@ -67,10 +69,13 @@ int update_hud()
     int i = wcslen(level_text[idx])-1;
     static wchar_t wtext[30];
     wchar_t chr = get_key_from_utf(level_text[idx][i-input_box.cursor_pos]);
+    //std::cout << "char : " << std::hex << level_text[idx][i-input_box.cursor_pos] << std::endl;
     text_color = {255,0,0};
 
     swprintf(wtext, 30, L"%c : \ufed1\ufead\ufea4\ufedf\ufe8d \ufe90\ufe98\ufedb\ufe8d", chr);
+    SDL_FreeSurface(msg_lbl_sur);
     msg_lbl_sur = TTF_RenderUNICODE_Solid(msg_lbl_font, (Uint16*)wtext, text_color);
+    SDL_DestroyTexture(msg_lbl_tex);
     msg_lbl_tex = SDL_CreateTextureFromSurface(renderer, msg_lbl_sur);
     SDL_QueryTexture(msg_lbl_tex, NULL, NULL, &w, &h);
     msg_lbl_rec.w = w;
@@ -134,8 +139,9 @@ int draw_hud()
     static double  phi = 0;
     phi += 0.6;
     x = (100 * sin((2 * 3.14 * 600)+ phi/5)) + 150;
-    printf("x = %d\n", x);
+    //printf("x = %d\n", x);
     change_pixel(title_sur,0,x,0,255);
+    SDL_DestroyTexture(title_tex);
     title_tex = SDL_CreateTextureFromSurface(renderer, title_sur);
     SDL_QueryTexture(title_tex, NULL, NULL, &w, &h);
     rect1 = (SDL_Rect){0,0,w,h};

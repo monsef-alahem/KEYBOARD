@@ -62,16 +62,19 @@ int input_box_clean_lines()
     }
 }
 
-int step_back()
+int step_back(int i=0)
 {
+    int tot = input_box.text[input_box.line_pos].utfs;
+    printf("%x\n", input_box.text[input_box.line_pos].in_utf[tot-input_box.cursor_pos]);
+    printf("%x\n", (tot-input_box.cursor_pos));
+    printf("%x\n\n", tot);
     if (input_box.chr_pos < 1)
         return 1;
-    unsigned char c = input_box.text[input_box.line_pos].in_byte[input_box.chr_pos];
-    if (c == 0x20) {
+    if (input_box.text[input_box.line_pos].in_utf[tot-input_box.cursor_pos] < 0xe000) {
         input_box.text[input_box.line_pos].in_byte[input_box.chr_pos] = 0;
         input_box.chr_pos--;
         input_box.text[i].bytes--;
-    } else {           
+    } else {          
         input_box.text[input_box.line_pos].in_byte[input_box.chr_pos] = 0;
         input_box.chr_pos--;
         input_box.text[i].bytes--;
@@ -90,10 +93,19 @@ int step_back()
     correct(&input_box.text[input_box.line_pos]);
 }
 
-int input_box_append_letter(unsigned char *c)
+int chr_single(int i)
+{
+    if(shift) {
+        return key_table_upcase[i].hexcode[1] == 0;
+    } else {
+        return key_table[i].hexcode[1] == 0;
+    }
+}
+
+int input_box_append_letter(unsigned char *c, int i)
 {
     if (input_box.line_pos < 2) {
-        if (c[0] == 0x20) {
+        if (chr_single(i)) {
             input_box.text[input_box.line_pos].in_byte[input_box.chr_pos] = c[0];
             input_box.chr_pos++;
         } else {           

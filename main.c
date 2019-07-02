@@ -25,18 +25,18 @@
 #include <wchar.h>
 #include <cmath>
 
-#include "baht_tools.h"
+#include "tools.h"
 
 ///fin des headers
 
 
 //variables globales
 
-int i = 0;
 int ret = 0;
 int coins_left = 7;
 int idx = 0;
 int level_id = 0;
+bool shift = 0;
 
 
 //variables globales SDL2
@@ -70,7 +70,7 @@ void load_data()
         if(level_text[j][i] == '\n' && prev_chr == '\n') {
             level_text[j][i] = getc(data_file);
         }
-        if (i > 49) {
+        if (i > 99) {
             printf("error line %d is too long\n", line_idx);
             goto error;
         }
@@ -151,7 +151,7 @@ int read_file_fill_level_text()
             i = 0;
             continue;
         }
-        if (i > 49) {
+        if (i > 99) {
             printf("error line %d is too long\n", j);
             goto error;
         }
@@ -206,7 +206,6 @@ int read_file_fill_level_text()
 
 int answer_check();
 
-#include "ui.h"
 
 /*
 d8a7 d884 alif lam
@@ -243,16 +242,68 @@ key_t key_table[KEYS] = {
     {'-', {0xd8,0x00}, SDLK_6},
     {'\'', {0xd8,0x00}, SDLK_4},
     {' ', {0x20}, SDLK_SPACE},
-    {' ', {0xd8,0xac}, SDLK_CARET},//^
-    {' ', {0xd8,0xaf}, SDLK_DOLLAR},
-    {' ', {0xd8,0xb7}, 249},//%
-    {' ', {0xd8,0xb0}, SDLK_ASTERISK},
-    {' ', {0xd8,0xa9}, SDLK_COMMA},
-    {' ', {0xd9,0x88}, SDLK_SEMICOLON},
-    {' ', {0xd8,0xb8}, SDLK_COLON},
-    {' ', {0xd8,0xb2}, SDLK_EXCLAIM}
+    {'^', {0xd8,0xac}, SDLK_CARET},
+    {'$', {0xd8,0xaf}, SDLK_DOLLAR},
+    {'%', {0xd8,0xb7}, 249},//%
+    {'*', {0xd8,0xb0}, SDLK_ASTERISK},
+    {',', {0xd8,0xa9}, SDLK_COMMA},
+    {';', {0xd9,0x88}, SDLK_SEMICOLON},
+    {':', {0xd8,0xb8}, SDLK_COLON},
+    {'!', {0xd8,0xb2}, SDLK_EXCLAIM}
 
 };
+
+key_t key_table_upcase[KEYS] = {
+    //{'َ', {0xd9,0x8e}, SDLK_a},
+    //{'لآ', {0xd9,0x84}, SDLK_b},
+    //{'ِ', {0xd9,0x90}, SDLK_c},
+    {']', {0x5d}, SDLK_d},
+    //{'ُ', {0xd9,0x8f}, SDLK_e},
+    {'[', {0x5b}, SDLK_f},
+    //{'لأ', {0xd9,0x84}, SDLK_g},
+    {'أ', {0xd8,0xa3}, SDLK_h},
+    {'÷', {0xc3,0xb7}, SDLK_i},
+    {'ـ', {0xd9,0x80}, SDLK_j},
+    {'،', {0xd8,0x8c}, SDLK_k},
+    {'/', {0x2f}, SDLK_l},
+    {':', {0x3a}, SDLK_m},
+    {'آ', {0xd8,0xa2}, SDLK_n},
+    {'×', {0xc3,0x97}, SDLK_o},
+    {'؛', {0xd8,0x9b}, SDLK_p},
+    {'\\', {0x5c}, SDLK_q},
+    //{'ٌ', {0xd9,0x8c}, SDLK_r},
+    //{'', {0x}, SDLK_s},
+    //{'لإ', {0xd9,0x84}, SDLK_t},
+///{'‘', {0xe2,0x80}, SDLK_u},
+    //{'ٍ', {0xd9,0x8d}, SDLK_v},
+    {'~', {0x7e}, SDLK_w},
+    //{'ْ', {0xd9,0x92}, SDLK_x},
+    {'إ', {0xd8,0xa5}, SDLK_y},
+    //{'z', {0xd9,0x8b}, SDLK_z},
+    {'0', {0x30}, SDLK_0},
+    {'1', {0x31}, SDLK_1},
+    {'2', {50}, SDLK_2},
+    {'3', {51}, SDLK_3},
+    {'4', {52}, SDLK_4},
+    {'5', {53}, SDLK_5},
+    {'6', {54}, SDLK_6},
+    {'7', {55}, SDLK_7},
+    {'8', {56}, SDLK_8},
+    {'9', {57}, SDLK_9},
+    {' ', {0x20}, SDLK_SPACE},
+    {'}', {0x7d}, SDLK_CARET},
+    {'{', {0x7b}, SDLK_DOLLAR},
+    {'"', {0x22}, 249},//%
+    //{'ّ', {0xd9,0x91}, SDLK_ASTERISK},
+    {'’', {0xe2,0x80}, SDLK_COMMA},
+    {',', {0x2c}, SDLK_SEMICOLON},
+    {'.', {0x2e}, SDLK_COLON},
+    {'؟', {0xd8,0x9f}, SDLK_EXCLAIM},
+    {'|', {0x7c}, 60}
+
+};
+
+#include "ui.h"
 
 int answer_check() {
     ret = mywcscmp(input_box.text[0].in_utf, quiz_box.text[0]);
@@ -365,6 +416,7 @@ int main(int argc, char**args)
     
 
     int loop = 1;
+    int loop2 = 1;
     int i = 0;
     int ret = 0;
 
@@ -378,6 +430,7 @@ int main(int argc, char**args)
         while ( SDL_PollEvent( &event ) ) {
             if ( event.type == SDL_QUIT) {                
                     loop = 0;
+                    loop2 = 0;
             } else if ( event.type == SDL_KEYDOWN ) {
                 cout << event.key.keysym.sym << endl;
                 if (event.key.keysym.sym == SDLK_ESCAPE) {
@@ -396,10 +449,16 @@ int main(int argc, char**args)
                 }
                 if (event.key.keysym.sym == SDLK_BACKSPACE) {
                     step_back();
+                    Mix_FreeChunk(wave);
+                    wave = Mix_LoadWAV("clean.mp3");
+                    Mix_PlayChannel(-1, wave, 0);                    
                     //input_box.text[input_box.line_pos][input_box.cursor_pos] = 0;
                 }
 
                 if (event.key.keysym.sym == SDLK_DELETE) {
+                    Mix_FreeChunk(wave);
+                    wave = Mix_LoadWAV("delete.mp3");
+                    Mix_PlayChannel(-1, wave, 0);
                     input_box_clean_lines();
                 }
                 if (event.key.keysym.sym == SDLK_DOWN) {
@@ -409,18 +468,40 @@ int main(int argc, char**args)
                     }*/
                 }
 
-                for (i = 0 ; i < KEYS ; i++) {
-                    if (event.key.keysym.sym == key_table[i].code) {
-    /*                  static int once = 1;
-                        if (!once) {
-                            input_box_clean_lines();
-                            once = 1;
-                        }*/
-                        input_box_append_letter(key_table[i].hexcode);
-                        wave = Mix_LoadWAV("key.mp3");
-                        Mix_PlayChannel(-1, wave, 0);
+                if (event.key.keysym.sym == SDLK_LSHIFT) {
+                    shift = !shift;
+                }
+                if (shift) {
+                    
+                    for (i = 0 ; i < KEYS ; i++) {
+                        if (event.key.keysym.sym == key_table_upcase[i].code) {
+        /*                  static int once = 1;
+                            if (!once) {
+                                input_box_clean_lines();
+                                once = 1;
+                            }*/
+                            input_box_append_letter(key_table_upcase[i].hexcode, i);
+                            Mix_FreeChunk(wave);
+                            wave = Mix_LoadWAV("key.mp3");
+                            Mix_PlayChannel(-1, wave, 0);
 
+                        }
                     }
+                } else {
+                    for (i = 0 ; i < KEYS ; i++) {
+                        if (event.key.keysym.sym == key_table[i].code) {
+                          static int once = 1;
+/*                            if (!once) {
+                                input_box_clean_lines();
+                                once = 1;
+                            }*/
+                            input_box_append_letter(key_table[i].hexcode, i);
+                            Mix_FreeChunk(wave);
+                            wave = Mix_LoadWAV("key.mp3");
+                            Mix_PlayChannel(-1, wave, 0);
+
+                        }
+                    }  
                 }
 
 
@@ -439,7 +520,6 @@ int main(int argc, char**args)
         SDL_Delay(32);
     }
 
-    loop = 1;
     int w,h;
     char text[20];
     
@@ -464,14 +544,14 @@ int main(int argc, char**args)
     lvl_ind_rec = (SDL_Rect){(640/2)-(w/2),(480/2)-(h/2),w,h};
 
 
-    while(loop) {
+    while(loop2) {
              //entrée de clavier
         while ( SDL_PollEvent( &event ) ) {
             if ( event.type == SDL_QUIT) {                
-                    loop = 0;
+                    loop2 = 0;
             } else if ( event.type == SDL_KEYDOWN ) {
                     if (event.key.keysym.sym == SDLK_ESCAPE)
-                        loop = 0;
+                        loop2 = 0;
             }
         }
         SDL_SetRenderDrawColor( renderer,0,0,0,255);
